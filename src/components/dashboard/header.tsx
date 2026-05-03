@@ -23,12 +23,13 @@ export async function DashboardHeader() {
         .single()
     : { data: null }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const storeUrl = merchant
     ? process.env.NODE_ENV === 'development'
       ? `http://localhost:3000?_tenant=${merchant.subdomain}`
       : merchant.custom_domain
         ? `https://${merchant.custom_domain}`
-        : `https://${merchant.subdomain}.${process.env.NEXT_PUBLIC_PLATFORM_DOMAIN}`
+        : `${appUrl}?_tenant=${merchant.subdomain}` // temporary: use _tenant param until wildcard DNS is set up
     : null
 
   return (

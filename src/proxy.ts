@@ -51,19 +51,18 @@ export async function proxy(request: NextRequest) {
 
   // Local dev shortcut: ?_tenant=subdomain lets you preview storefronts without subdomain DNS
   if (isPlatformHost) {
-    if (process.env.NODE_ENV === 'development') {
-      const tenantParam = request.nextUrl.searchParams.get('_tenant')
-      if (tenantParam) {
-        const { data } = await supabase
-          .from('merchants')
-          .select('id')
-          .eq('subdomain', tenantParam)
-          .maybeSingle()
-        if (data) {
-          const rewriteUrl = request.nextUrl.clone()
-          rewriteUrl.pathname = `/${data.id}${pathname}`
-          return NextResponse.rewrite(rewriteUrl, { headers: response.headers })
-        }
+    // _tenant param works in all environments as a fallback (used when wildcard DNS isn't set up)
+    const tenantParam = request.nextUrl.searchParams.get('_tenant')
+    if (tenantParam) {
+      const { data } = await supabase
+        .from('merchants')
+        .select('id')
+        .eq('subdomain', tenantParam)
+        .maybeSingle()
+      if (data) {
+        const rewriteUrl = request.nextUrl.clone()
+        rewriteUrl.pathname = `/${data.id}${pathname}`
+        return NextResponse.rewrite(rewriteUrl, { headers: response.headers })
       }
     }
     return response
