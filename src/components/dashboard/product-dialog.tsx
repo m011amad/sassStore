@@ -64,7 +64,7 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="price">Price (USD)</Label>
+              <Label htmlFor="price">Price (AUD)</Label>
               <Input
                 id="price"
                 name="price"

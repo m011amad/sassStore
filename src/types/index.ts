@@ -22,3 +22,11 @@ export type OrderItem = {
 }
 
 export type OrderStatus = Order['status']
+
+export type ShippingAddress = {
+  street: string
+  suburb: string
+  state: string
+  postcode: string
+  country: string
+}

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import type { MerchantBranding } from '@/types'
 import { StorefrontNav } from '@/components/storefront/nav'
+import { CartProvider } from '@/store/cart-store'
 
 export default async function StorefrontLayout({
   children,
@@ -35,12 +36,15 @@ export default async function StorefrontLayout({
   } as React.CSSProperties
 
   return (
-    <div data-tenant-id={tenantId} style={cssVars}>
-      <StorefrontNav
-        storeName={branding.storeName ?? merchant.subdomain}
-        logoUrl={branding.logoUrl}
-      />
-      <main className="min-h-screen">{children}</main>
-    </div>
+    <CartProvider tenantId={tenantId}>
+      <div data-tenant-id={tenantId} style={cssVars}>
+        <StorefrontNav
+          storeName={branding.storeName ?? merchant.subdomain}
+          logoUrl={branding.logoUrl}
+          tenantId={tenantId}
+        />
+        <main className="min-h-screen">{children}</main>
+      </div>
+    </CartProvider>
   )
 }

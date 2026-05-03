@@ -17,7 +17,7 @@ import type { Product } from '@/types'
 import { Pencil, Trash2 } from 'lucide-react'
 
 function formatPrice(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
 }
 
 export function ProductsTable({ products }: { products: Product[] }) {

@@ -4,6 +4,8 @@ import { updateStoreSettings } from '@/app/actions/settings'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { BillingButton } from '@/components/dashboard/billing-button'
+import { ColorInput } from '@/components/dashboard/color-input'
 import type { MerchantBranding } from '@/types'
 
 export default async function SettingsPage() {
@@ -68,25 +70,8 @@ export default async function SettingsPage() {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="primaryColor">Primary color</Label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                id="primaryColorPicker"
-                className="h-9 w-12 cursor-pointer rounded border bg-transparent p-0.5"
-                onChange={(e) => {
-                  const input = document.getElementById('primaryColor') as HTMLInputElement
-                  if (input) input.value = e.target.value
-                }}
-              />
-              <Input
-                id="primaryColor"
-                name="primaryColor"
-                defaultValue={branding.primaryColor ?? ''}
-                placeholder="#000000 or oklch(…)"
-                className="max-w-xs font-mono text-sm"
-              />
-            </div>
+            <Label>Primary color</Label>
+            <ColorInput defaultValue={branding.primaryColor} />
           </div>
 
           <div className="space-y-1">
@@ -121,6 +106,16 @@ export default async function SettingsPage() {
 
         <Button type="submit">Save changes</Button>
       </form>
+
+      <div className="rounded-xl border bg-card p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold">Billing</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your subscription plan and payment method via the Stripe billing portal.
+          </p>
+        </div>
+        <BillingButton />
+      </div>
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { sendOrderConfirmation } from '@/lib/resend'
 import { revalidatePath } from 'next/cache'
 import type { CartItem } from '@/store/cart-store'
-import type { OrderStatus } from '@/types'
+import type { OrderStatus, ShippingAddress } from '@/types'
 
 export async function createOrder(
   tenantId: string,
@@ -15,7 +15,14 @@ export async function createOrder(
   const email = formData.get('email') as string
   const name = formData.get('name') as string
 
-  // Get or create customer record (upsert by tenant + email)
+  const shipping_address: ShippingAddress = {
+    street: formData.get('street') as string,
+    suburb: formData.get('suburb') as string,
+    state: formData.get('state') as string,
+    postcode: formData.get('postcode') as string,
+    country: 'Australia',
+  }
+
   const { data: customer, error: upsertError } = await supabaseAdmin
     .from('customers')
     .upsert({ tenant_id: tenantId, email, name }, { onConflict: 'tenant_id,email' })
@@ -35,13 +42,12 @@ export async function createOrder(
 
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
-    .insert({ tenant_id: tenantId, customer_id: customer.id, total, items: orderItems })
+    .insert({ tenant_id: tenantId, customer_id: customer.id, total, items: orderItems, shipping_address })
     .select('id')
     .single()
 
   if (orderError || !order) throw new Error('Failed to create order')
 
-  // Get store name for email
   const { data: merchant } = await supabaseAdmin
     .from('merchants')
     .select('branding, subdomain')
@@ -53,13 +59,13 @@ export async function createOrder(
     merchant?.subdomain ??
     'Store'
 
-  // Send confirmation — failure doesn't fail the order
   try {
     await sendOrderConfirmation({
       to: email,
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       storeName,
       total,
+      shippingAddress: shipping_address,
     })
   } catch {}
 

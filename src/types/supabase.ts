@@ -113,6 +113,7 @@ export type Database = {
           customer_id: string | null;
           id: string;
           items: Json;
+          shipping_address: Json | null;
           status: string;
           tenant_id: string;
           total: number;
@@ -122,6 +123,7 @@ export type Database = {
           customer_id?: string | null;
           id?: string;
           items?: Json;
+          shipping_address?: Json | null;
           status?: string;
           tenant_id: string;
           total: number;
@@ -131,6 +133,7 @@ export type Database = {
           customer_id?: string | null;
           id?: string;
           items?: Json;
+          shipping_address?: Json | null;
           status?: string;
           tenant_id?: string;
           total?: number;

@@ -25,7 +25,7 @@ type OrderWithCustomer = Order & { customers: Pick<Customer, 'name' | 'email'> |
 const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const
 
 function formatPrice(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
 }
 
 function StatusSelect({ orderId, status }: { orderId: string; status: OrderStatus }) {
