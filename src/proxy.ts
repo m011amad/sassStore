@@ -49,20 +49,33 @@ export async function proxy(request: NextRequest) {
     cleanHost === '127.0.0.1' ||
     cleanHost.endsWith('.vercel.app') // preview deployments
 
-  // Local dev shortcut: ?_tenant=subdomain lets you preview storefronts without subdomain DNS
   if (isPlatformHost) {
-    // _tenant param works in all environments as a fallback (used when wildcard DNS isn't set up)
     const tenantParam = request.nextUrl.searchParams.get('_tenant')
-    if (tenantParam) {
+    // Fall back to the session cookie set on a previous ?_tenant= visit so that
+    // relative links (/products, /checkout, etc.) keep working without the param.
+    const cookieTenant = request.cookies.get('x-storefront-tenant')?.value
+    const subdomain = tenantParam ?? (pathname !== '/' ? cookieTenant : null)
+
+    if (subdomain) {
       const { data } = await supabase
         .from('merchants')
         .select('id')
-        .eq('subdomain', tenantParam)
+        .eq('subdomain', subdomain)
         .maybeSingle()
       if (data) {
         const rewriteUrl = request.nextUrl.clone()
         rewriteUrl.pathname = `/${data.id}${pathname}`
-        return NextResponse.rewrite(rewriteUrl, { headers: response.headers })
+        const res = NextResponse.rewrite(rewriteUrl, { headers: response.headers })
+        // Stamp the cookie whenever the param is explicitly present so it stays fresh.
+        if (tenantParam) {
+          res.cookies.set('x-storefront-tenant', tenantParam, {
+            path: '/',
+            sameSite: 'lax',
+            httpOnly: true,
+            // Session cookie — clears when browser closes, keeping stores isolated.
+          })
+        }
+        return res
       }
     }
     return response
