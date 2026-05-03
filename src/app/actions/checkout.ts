@@ -16,7 +16,11 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
     merchant?.subdomain ??
     'Store'
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
+  // VERCEL_URL is set automatically by Vercel (e.g. sass-store.vercel.app).
+  // Prefer it over NEXT_PUBLIC_APP_URL which may still point to a placeholder domain.
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
 
   const serializedItems = JSON.stringify(
     items.map((i) => ({

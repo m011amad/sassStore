@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Minus, Plus, Trash2, ShoppingBag, Loader2 } from 'lucide-react'
 import { createCheckoutSession } from '@/app/actions/checkout'
+import { toast } from 'sonner'
 import { useState } from 'react'
 
 function formatPrice(cents: number) {
@@ -29,7 +30,8 @@ export function CartSheet({ tenantId }: { tenantId: string }) {
     try {
       const url = await createCheckoutSession(tenantId, items)
       window.location.href = url
-    } catch {
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not start checkout. Please try again.')
       setLoading(false)
     }
   }
