@@ -17,7 +17,7 @@ export function DashboardSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <Store className="size-4 text-sidebar-primary" />
         <span className="text-sm font-semibold text-sidebar-foreground">YourPlatform</span>

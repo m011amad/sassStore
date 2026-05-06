@@ -109,7 +109,7 @@ export default async function DashboardPage() {
       {/* Recent orders */}
       {recentOrders.length > 0 && (
         <div className="rounded-xl border bg-card">
-          <div className="flex items-center justify-between border-b px-6 py-4">
+          <div className="flex items-center justify-between border-b px-4 py-4 sm:px-6">
             <h2 className="font-semibold">Recent Orders</h2>
             <Link href="/dashboard/orders" className="text-sm text-muted-foreground hover:text-foreground">
               View all →
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
             {recentOrders.map((order) => {
               const customer = order.customers as { name?: string; email?: string } | null
               return (
-                <li key={order.id} className="flex items-center justify-between px-6 py-3">
+                <li key={order.id} className="flex flex-col gap-1.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                   <div>
                     <p className="text-sm font-medium">{customer?.name ?? customer?.email ?? '—'}</p>
                     <p className="font-mono text-xs text-muted-foreground">
