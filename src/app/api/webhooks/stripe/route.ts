@@ -43,26 +43,32 @@ export async function POST(request: NextRequest) {
 
       const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
 
-      const { data: customer } = await supabaseAdmin
+      const { data: customer, error: customerError } = await supabaseAdmin
         .from('customers')
         .upsert({ tenant_id: tenantId, email, name }, { onConflict: 'tenant_id,email' })
         .select('id')
         .single()
 
+      if (customerError) { console.error('[webhook] customer upsert failed:', customerError); break }
       if (!customer) break
 
-      const { data: order } = await supabaseAdmin
+      const orderPayload = {
+        tenant_id: tenantId,
+        customer_id: customer.id,
+        status: 'paid',
+        total,
+        items,
+        shipping_address,
+      }
+      console.log('[webhook] inserting order:', JSON.stringify(orderPayload))
+
+      const { data: order, error: orderError } = await supabaseAdmin
         .from('orders')
-        .insert({
-          tenant_id: tenantId,
-          customer_id: customer.id,
-          total,
-          items,
-          shipping_address,
-        })
+        .insert(orderPayload)
         .select('id')
         .single()
 
+      if (orderError) { console.error('[webhook] order insert failed:', JSON.stringify(orderError)); break }
       if (!order) break
 
       const { data: merchant } = await supabaseAdmin

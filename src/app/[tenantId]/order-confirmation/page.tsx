@@ -14,9 +14,9 @@ export default async function OrderConfirmationPage({
   searchParams,
 }: {
   params: Promise<{ tenantId: string }>
-  searchParams: Promise<{ session_id?: string }>
+  searchParams: Promise<{ session_id?: string; _tenant?: string }>
 }) {
-  const [{ tenantId }, { session_id }] = await Promise.all([params, searchParams])
+  const [{ tenantId }, { session_id, _tenant }] = await Promise.all([params, searchParams])
 
   if (!session_id) notFound()
 
@@ -102,7 +102,7 @@ export default async function OrderConfirmationPage({
       </div>
 
       <Button asChild className="mt-6 w-full" variant="outline" size="lg">
-        <Link href={`/${tenantId}`}>Continue shopping</Link>
+        <Link href={_tenant ? `/?_tenant=${_tenant}` : '/'}>Continue shopping</Link>
       </Button>
     </div>
   )
