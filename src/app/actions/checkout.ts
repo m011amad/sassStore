@@ -33,6 +33,13 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    // card covers Apple Pay + Google Pay automatically as wallet buttons.
+    // Explicit list prevents incompatible Dashboard methods (e.g. BECS Direct Debit)
+    // from breaking session creation.
+    payment_method_types: ['card', 'zip', 'wechat_pay'],
+    payment_method_options: {
+      wechat_pay: { client: 'web' },
+    },
     line_items: items.map((item) => ({
       price_data: {
         currency: 'aud',
