@@ -17,9 +17,17 @@ export async function POST(request: NextRequest) {
 
   const { data: merchant } = await supabaseAdmin
     .from('merchants')
-    .select('branding, subdomain, stripe_connect_id, stripe_connect_onboarded')
+    .select('branding, subdomain')
     .eq('id', tenantId)
     .single()
+
+  const { data: connectData } = (await supabaseAdmin
+    .from('merchants')
+    .select('stripe_connect_id, stripe_connect_onboarded')
+    .eq('id', tenantId)
+    .single()) as unknown as {
+    data: { stripe_connect_id: string | null; stripe_connect_onboarded: boolean } | null
+  }
 
   const storeName =
     (merchant?.branding as { storeName?: string } | null)?.storeName ??
@@ -45,7 +53,7 @@ export async function POST(request: NextRequest) {
   )
 
   const useConnect =
-    merchant?.stripe_connect_id && merchant?.stripe_connect_onboarded
+    connectData?.stripe_connect_id && connectData?.stripe_connect_onboarded
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -86,7 +94,7 @@ export async function POST(request: NextRequest) {
       ...(useConnect && {
         payment_intent_data: {
           application_fee_amount: applicationFee,
-          transfer_data: { destination: merchant!.stripe_connect_id! },
+          transfer_data: { destination: connectData!.stripe_connect_id! },
         },
       }),
     })

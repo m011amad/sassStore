@@ -10,11 +10,11 @@ export async function POST() {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: merchant } = await supabaseAdmin
+  const { data: merchant } = (await supabaseAdmin
     .from('merchants')
     .select('id, stripe_connect_id')
     .eq('user_id', user.id)
-    .single()
+    .single()) as unknown as { data: { id: string; stripe_connect_id: string | null } | null }
 
   if (!merchant) return NextResponse.json({ error: 'Merchant not found' }, { status: 404 })
 
@@ -34,7 +34,7 @@ export async function POST() {
       },
     })
     accountId = account.id
-    await supabaseAdmin
+    await (supabaseAdmin as any)
       .from('merchants')
       .update({ stripe_connect_id: accountId })
       .eq('id', merchant.id)

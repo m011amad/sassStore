@@ -12,11 +12,11 @@ export async function openPayoutsDashboard() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: merchant } = await supabaseAdmin
+  const { data: merchant } = (await supabaseAdmin
     .from('merchants')
     .select('stripe_connect_id')
     .eq('user_id', user.id)
-    .single()
+    .single()) as unknown as { data: { stripe_connect_id: string | null } | null }
 
   if (!merchant?.stripe_connect_id) redirect('/dashboard/settings')
 

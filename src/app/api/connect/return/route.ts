@@ -10,16 +10,16 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.redirect(new URL('/login', request.url))
 
-  const { data: merchant } = await supabaseAdmin
+  const { data: merchant } = (await supabaseAdmin
     .from('merchants')
     .select('id, stripe_connect_id')
     .eq('user_id', user.id)
-    .single()
+    .single()) as unknown as { data: { id: string; stripe_connect_id: string | null } | null }
 
   if (merchant?.stripe_connect_id) {
     const account = await stripe.accounts.retrieve(merchant.stripe_connect_id)
     if (account.charges_enabled && account.details_submitted) {
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('merchants')
         .update({ stripe_connect_onboarded: true })
         .eq('id', merchant.id)

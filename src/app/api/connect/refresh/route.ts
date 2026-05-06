@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.redirect(new URL('/login', request.url))
 
-  const { data: merchant } = await supabaseAdmin
+  const { data: merchant } = (await supabaseAdmin
     .from('merchants')
     .select('id, stripe_connect_id')
     .eq('user_id', user.id)
-    .single()
+    .single()) as unknown as { data: { id: string; stripe_connect_id: string | null } | null }
 
   if (!merchant?.stripe_connect_id) {
     return NextResponse.redirect(new URL('/dashboard/settings', request.url))
