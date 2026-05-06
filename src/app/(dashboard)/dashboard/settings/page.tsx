@@ -20,11 +20,21 @@ export default async function SettingsPage() {
 
   const { data: merchant } = await supabase
     .from('merchants')
-    .select('id, subdomain, custom_domain, branding, stripe_connect_id, stripe_connect_onboarded')
+    .select('id, subdomain, custom_domain, branding')
     .eq('user_id', user.id)
     .single()
 
   if (!merchant) redirect('/login')
+
+  // stripe_connect_id / stripe_connect_onboarded are new columns — cast to bypass
+  // generated types until the SQL migration has been run in Supabase
+  const { data: connectData } = (await supabase
+    .from('merchants')
+    .select('stripe_connect_id, stripe_connect_onboarded')
+    .eq('id', merchant.id)
+    .single()) as unknown as {
+    data: { stripe_connect_id: string | null; stripe_connect_onboarded: boolean } | null
+  }
 
   const branding = (merchant.branding ?? {}) as MerchantBranding
 
@@ -119,7 +129,7 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        {merchant.stripe_connect_onboarded ? (
+        {connectData?.stripe_connect_onboarded ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-green-600">
               <CheckCircle className="size-4" />
@@ -129,7 +139,7 @@ export default async function SettingsPage() {
               <Button type="submit" variant="outline">Manage Payouts</Button>
             </form>
           </div>
-        ) : merchant.stripe_connect_id ? (
+        ) : connectData?.stripe_connect_id ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-yellow-600">
               <AlertCircle className="size-4" />
