@@ -28,8 +28,7 @@ export function CartSheet({ tenantId }: { tenantId: string }) {
   async function handleCheckout() {
     setLoading(true)
     try {
-      const url = await createCheckoutSession(tenantId, items)
-      window.location.href = url
+      await createCheckoutSession(tenantId, items)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not start checkout. Please try again.')
       setLoading(false)

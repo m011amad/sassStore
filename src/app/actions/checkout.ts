@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import type { CartItem } from '@/store/cart-store'
@@ -30,6 +31,8 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
       quantity: i.quantity,
     }))
   )
+
+  let checkoutUrl: string
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -77,10 +80,15 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
     })
 
     if (!session.url) throw new Error('Stripe did not return a checkout URL.')
-    return session.url
+    checkoutUrl = session.url
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[checkout] Stripe session creation failed:', message)
     throw new Error(message)
   }
+
+  // redirect() is called outside try/catch so Next.js can handle it as a
+  // proper HTTP redirect — Safari respects this, unlike window.location.href
+  // after an async operation.
+  redirect(checkoutUrl)
 }
