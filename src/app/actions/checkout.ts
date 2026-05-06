@@ -72,8 +72,8 @@ export async function createCheckoutSession(
         submit: { message: `Ordering from ${storeName}. Delivery in 3–7 business days.` },
       },
       metadata: { tenantId, items: serializedItems },
-      success_url: `${baseUrl}/${tenantId}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/${tenantId}`,
+      success_url: `${baseUrl}/order-confirmation?_tenant=${merchant?.subdomain}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/?_tenant=${merchant?.subdomain}`,
     })
 
     if (!session.url) throw new Error('Stripe did not return a checkout URL.')
