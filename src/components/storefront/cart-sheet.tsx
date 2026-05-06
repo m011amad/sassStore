@@ -1,5 +1,6 @@
 'use client'
 
+import { useActionState, useEffect } from 'react'
 import { useCartStore } from '@/store/cart-store'
 import {
   Sheet,
@@ -13,7 +14,6 @@ import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Minus, Plus, Trash2, ShoppingBag, Loader2 } from 'lucide-react'
 import { createCheckoutSession } from '@/app/actions/checkout'
 import { toast } from 'sonner'
-import { useState } from 'react'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
@@ -21,19 +21,17 @@ function formatPrice(cents: number) {
 
 export function CartSheet({ tenantId }: { tenantId: string }) {
   const { items, updateQuantity, removeItem } = useCartStore()
-  const [loading, setLoading] = useState(false)
   const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0)
   const count = items.reduce((sum, i) => sum + i.quantity, 0)
 
-  async function handleCheckout() {
-    setLoading(true)
-    try {
-      await createCheckoutSession(tenantId, items)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not start checkout. Please try again.')
-      setLoading(false)
-    }
-  }
+  const [errorMsg, formAction, pending] = useActionState(
+    (_prev: string | null) => createCheckoutSession(tenantId, items),
+    null
+  )
+
+  useEffect(() => {
+    if (errorMsg) toast.error(errorMsg)
+  }, [errorMsg])
 
   return (
     <Sheet>
@@ -152,21 +150,23 @@ export function CartSheet({ tenantId }: { tenantId: string }) {
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
-              <Button
-                className="w-full gap-2"
-                size="lg"
-                onClick={handleCheckout}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Redirecting…
-                  </>
-                ) : (
-                  `Pay ${formatPrice(total)} →`
-                )}
-              </Button>
+              <form action={formAction}>
+                <Button
+                  type="submit"
+                  className="w-full gap-2"
+                  size="lg"
+                  disabled={pending}
+                >
+                  {pending ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Redirecting…
+                    </>
+                  ) : (
+                    `Pay ${formatPrice(total)} →`
+                  )}
+                </Button>
+              </form>
               <p className="text-center text-xs text-muted-foreground">
                 Free delivery across Australia · Secure checkout via Stripe
               </p>

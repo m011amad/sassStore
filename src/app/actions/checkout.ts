@@ -5,7 +5,11 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import type { CartItem } from '@/store/cart-store'
 
-export async function createCheckoutSession(tenantId: string, items: CartItem[]) {
+// Returns an error string on failure, or redirects to Stripe on success.
+export async function createCheckoutSession(
+  tenantId: string,
+  items: CartItem[]
+): Promise<string | null> {
   const { data: merchant } = await supabaseAdmin
     .from('merchants')
     .select('branding, subdomain')
@@ -17,8 +21,6 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
     merchant?.subdomain ??
     'Store'
 
-  // VERCEL_URL is set automatically by Vercel (e.g. sass-store.vercel.app).
-  // Prefer it over NEXT_PUBLIC_APP_URL which may still point to a placeholder domain.
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
@@ -37,18 +39,13 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      // card covers Apple Pay + Google Pay automatically as wallet buttons.
-      // wechat_pay requires client: 'web' for browser checkout.
-      payment_method_types: ['card', 'wechat_pay'],
-      payment_method_options: {
-        wechat_pay: { client: 'web' },
-      },
+      // No payment_method_types = Stripe automatically uses all methods
+      // enabled in the Dashboard (Apple Pay, Google Pay, WeChat Pay, etc.)
       line_items: items.map((item) => ({
         price_data: {
           currency: 'aud',
           product_data: {
             name: item.product.name,
-            // Stripe requires absolute https:// image URLs
             ...(item.product.images[0]?.startsWith('https://') && {
               images: [item.product.images[0]],
             }),
@@ -84,11 +81,10 @@ export async function createCheckoutSession(tenantId: string, items: CartItem[])
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[checkout] Stripe session creation failed:', message)
-    throw new Error(message)
+    return message
   }
 
-  // redirect() is called outside try/catch so Next.js can handle it as a
-  // proper HTTP redirect — Safari respects this, unlike window.location.href
-  // after an async operation.
+  // redirect() outside try/catch — Next.js sends a proper HTTP redirect that
+  // Safari follows natively (unlike window.location.href after an async call).
   redirect(checkoutUrl)
 }
