@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       const orderPayload = {
         tenant_id: tenantId,
         customer_id: customer.id,
-        status: 'paid',
+        status: 'pending',
         total,
         items,
         shipping_address,

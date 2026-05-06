@@ -4,6 +4,7 @@ import { CheckCircle, MapPin, Package } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { ClearCart } from './clear-cart'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
@@ -33,6 +34,7 @@ export default async function OrderConfirmationPage({
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 sm:px-6">
+      <ClearCart />
       <div className="mb-6 flex justify-center">
         <div className="flex size-20 items-center justify-center rounded-full bg-green-50">
           <CheckCircle className="size-10 text-green-500" />
