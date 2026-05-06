@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   const { data: merchant } = await supabaseAdmin
     .from('merchants')
-    .select('branding, subdomain')
+    .select('branding, subdomain, stripe_connect_id, stripe_connect_onboarded')
     .eq('id', tenantId)
     .single()
 
@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
 
+  const PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT ?? '2')
+
+  const orderTotal = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0)
+  const applicationFee = Math.round(orderTotal * PLATFORM_FEE_PERCENT / 100)
+
   const serializedItems = JSON.stringify(
     items.map((i) => ({
       productId: i.product.id,
@@ -38,6 +43,9 @@ export async function POST(request: NextRequest) {
       quantity: i.quantity,
     }))
   )
+
+  const useConnect =
+    merchant?.stripe_connect_id && merchant?.stripe_connect_onboarded
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -75,6 +83,12 @@ export async function POST(request: NextRequest) {
       metadata: { tenantId, items: serializedItems },
       success_url: `${baseUrl}/order-confirmation?_tenant=${merchant?.subdomain}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/?_tenant=${merchant?.subdomain}`,
+      ...(useConnect && {
+        payment_intent_data: {
+          application_fee_amount: applicationFee,
+          transfer_data: { destination: merchant!.stripe_connect_id! },
+        },
+      }),
     })
 
     if (!session.url) throw new Error('Stripe did not return a checkout URL.')

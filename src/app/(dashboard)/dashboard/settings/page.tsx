@@ -1,11 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { updateStoreSettings } from '@/app/actions/settings'
+import { openPayoutsDashboard } from '@/app/actions/connect'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { BillingButton } from '@/components/dashboard/billing-button'
+import { ConnectButton } from '@/components/dashboard/connect-button'
 import { ColorInput } from '@/components/dashboard/color-input'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import type { MerchantBranding } from '@/types'
 
 export default async function SettingsPage() {
@@ -17,7 +20,7 @@ export default async function SettingsPage() {
 
   const { data: merchant } = await supabase
     .from('merchants')
-    .select('id, subdomain, custom_domain, branding')
+    .select('id, subdomain, custom_domain, branding, stripe_connect_id, stripe_connect_onboarded')
     .eq('user_id', user.id)
     .single()
 
@@ -106,6 +109,38 @@ export default async function SettingsPage() {
 
         <Button type="submit">Save changes</Button>
       </form>
+
+      {/* Payouts */}
+      <div className="rounded-xl border bg-card p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold">Payouts</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Connect your bank account to receive payments from your store. The platform retains a 2% fee per transaction.
+          </p>
+        </div>
+
+        {merchant.stripe_connect_onboarded ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+              <CheckCircle className="size-4" />
+              Stripe account connected — payouts are active
+            </div>
+            <form action={openPayoutsDashboard}>
+              <Button type="submit" variant="outline">Manage Payouts</Button>
+            </form>
+          </div>
+        ) : merchant.stripe_connect_id ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-yellow-600">
+              <AlertCircle className="size-4" />
+              Setup incomplete — finish connecting your bank account
+            </div>
+            <ConnectButton label="Complete Setup" variant="outline" />
+          </div>
+        ) : (
+          <ConnectButton label="Connect Stripe Account" />
+        )}
+      </div>
 
       <div className="rounded-xl border bg-card p-6 space-y-4">
         <div>

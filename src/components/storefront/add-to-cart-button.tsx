@@ -14,7 +14,10 @@ export function AddToCartButton({ product }: { product: Product }) {
   function handleAdd() {
     addItem(product)
     setAdded(true)
-    toast.success(`${product.name} added to cart`)
+    toast.success('Added to cart', {
+      description: product.name,
+      duration: 3000,
+    })
     setTimeout(() => setAdded(false), 1800)
   }
 
