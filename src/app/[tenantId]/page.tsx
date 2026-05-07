@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import { unstable_noStore as noStore } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/storefront/product-card'
 import { SearchSort } from '@/components/storefront/search-sort'
@@ -35,6 +36,7 @@ export default async function StorefrontPage({
   params: Promise<{ tenantId: string }>
   searchParams: Promise<{ q?: string; sort?: string; category?: string }>
 }) {
+  noStore()
   const [{ tenantId }, { q, sort, category }] = await Promise.all([params, searchParams])
   const supabase = await createClient()
 
