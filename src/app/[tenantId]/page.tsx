@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/storefront/product-card'
 import { SearchSort } from '@/components/storefront/search-sort'

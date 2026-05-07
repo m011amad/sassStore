@@ -10,26 +10,22 @@ export function NavSearch() {
   const searchParams = useSearchParams()
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  // In dev, the storefront is accessed via ?_tenant=subdomain on localhost.
-  // The proxy rewrites internally but the browser URL stays at /?_tenant=...
-  // so we must preserve that param when navigating to /products.
+  // Preserve _tenant param (dev) or path-based tenantId (prod direct access)
   const tenantParam = searchParams.get('_tenant')
-
-  // In prod (subdomain/custom domain), the tenantId is the first path segment.
-  // parts[0] is the UUID when accessed via e.g. yourplatform.com/{uuid}/...
-  // but in dev mode it's absent — we use _tenant instead.
   const parts = pathname.split('/').filter(Boolean)
   const tenantInPath = !tenantParam && parts.length > 0
 
   function handleChange(value: string) {
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      const params = new URLSearchParams()
+      // Build params preserving all current params, then set/clear q
+      const params = new URLSearchParams(searchParams.toString())
       if (value.trim()) params.set('q', value.trim())
-      if (tenantParam) params.set('_tenant', tenantParam)
+      else params.delete('q')
 
-      const base = tenantInPath ? `/${parts[0]}/products` : '/products'
-      router.push(`${base}?${params.toString()}`)
+      // Navigate to the shop root (not /products) to avoid the redirect roundtrip
+      const base = tenantInPath ? `/${parts[0]}` : '/'
+      router.replace(`${base}?${params.toString()}`, { scroll: false })
     }, 350)
   }
 
@@ -39,6 +35,7 @@ export function NavSearch() {
       <input
         type="search"
         placeholder="Search products…"
+        defaultValue={searchParams.get('q') ?? ''}
         onChange={(e) => handleChange(e.target.value)}
         className="h-9 w-full rounded-lg border bg-muted/50 pl-9 pr-3 text-sm outline-none focus:border-ring focus:bg-background transition-colors"
       />
