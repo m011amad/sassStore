@@ -2,8 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { AddToCartButton } from '@/components/storefront/add-to-cart-button'
 import { ProductCard } from '@/components/storefront/product-card'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { BackButton } from '@/components/storefront/back-button'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
@@ -36,14 +35,7 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Back */}
-      <Link
-        href="../products"
-        className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        All products
-      </Link>
+      <BackButton label="All products" />
 
       <div className="grid gap-12 lg:grid-cols-2">
         {/* Image */}

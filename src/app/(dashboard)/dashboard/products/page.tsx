@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProductsTable } from '@/components/dashboard/products-table'
 import { AddProductButton } from '@/components/dashboard/add-product-button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Package } from 'lucide-react'
 
 export default async function ProductsPage() {
   const supabase = await createClient()
@@ -38,9 +40,11 @@ export default async function ProductsPage() {
         {products && products.length > 0 ? (
           <ProductsTable products={products} />
         ) : (
-          <div className="p-12 text-center text-muted-foreground">
-            No products yet. Click &quot;Add Product&quot; to get started.
-          </div>
+          <EmptyState
+            icon={Package}
+            title="No products yet"
+            description="Add your first product to start selling in your store."
+          />
         )}
       </Card>
     </div>

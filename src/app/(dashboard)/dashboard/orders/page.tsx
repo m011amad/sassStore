@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { OrdersTable } from '@/components/dashboard/orders-table'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ShoppingCart } from 'lucide-react'
 
 export default async function OrdersPage() {
   const supabase = await createClient()
@@ -34,7 +36,11 @@ export default async function OrdersPage() {
         {orders && orders.length > 0 ? (
           <OrdersTable orders={orders as any} />
         ) : (
-          <div className="p-12 text-center text-muted-foreground">No orders yet.</div>
+          <EmptyState
+            icon={ShoppingCart}
+            title="No orders yet"
+            description="Orders will appear here once customers start purchasing from your store."
+          />
         )}
       </div>
     </div>

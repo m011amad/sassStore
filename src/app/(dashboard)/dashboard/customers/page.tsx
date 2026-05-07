@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CustomersTable } from '@/components/dashboard/customers-table'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Users } from 'lucide-react'
 
 export default async function CustomersPage() {
   const supabase = await createClient()
@@ -34,7 +36,11 @@ export default async function CustomersPage() {
         {customers && customers.length > 0 ? (
           <CustomersTable customers={customers} />
         ) : (
-          <div className="p-12 text-center text-muted-foreground">No customers yet.</div>
+          <EmptyState
+            icon={Users}
+            title="No customers yet"
+            description="Customers will appear here once someone places their first order."
+          />
         )}
       </div>
     </div>

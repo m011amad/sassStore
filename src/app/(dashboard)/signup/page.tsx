@@ -73,7 +73,7 @@ export default async function SignupPage({
                 pattern="[a-z0-9-]{3,32}"
                 className="flex-1 bg-transparent outline-none"
               />
-              <span className="text-muted-foreground">.yourplatform.com</span>
+              <span className="text-muted-foreground">.digitalmarket.com</span>
             </div>
           </div>
           <div className="space-y-1.5">

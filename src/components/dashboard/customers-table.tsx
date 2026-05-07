@@ -1,19 +1,18 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Customer } from '@/types'
+
+function initials(name: string | null, email: string) {
+  if (name) return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+  return email.slice(0, 2).toUpperCase()
+}
 
 export function CustomersTable({ customers }: { customers: Customer[] }) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
+          <TableHead>Customer</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Joined</TableHead>
         </TableRow>
@@ -21,10 +20,19 @@ export function CustomersTable({ customers }: { customers: Customer[] }) {
       <TableBody>
         {customers.map((customer) => (
           <TableRow key={customer.id}>
-            <TableCell className="font-medium">{customer.name}</TableCell>
-            <TableCell>{customer.email}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <Avatar className="size-8">
+                  <AvatarFallback className="text-xs">
+                    {initials(customer.name, customer.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="font-medium">{customer.name ?? '—'}</span>
+              </div>
+            </TableCell>
+            <TableCell className="text-muted-foreground">{customer.email}</TableCell>
             <TableCell className="text-sm text-muted-foreground">
-              {new Date(customer.created_at).toLocaleDateString()}
+              {new Date(customer.created_at).toLocaleDateString('en-AU')}
             </TableCell>
           </TableRow>
         ))}

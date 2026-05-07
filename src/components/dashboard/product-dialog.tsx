@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition, useRef, useState } from 'react'
+import { useTransition, useRef, useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,11 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
 
   const [imageUrl, setImageUrl] = useState<string>(product?.images[0] ?? '')
   const [uploading, setUploading] = useState(false)
+
+  // Sync image when dialog opens or switches to a different product
+  useEffect(() => {
+    if (open) setImageUrl(product?.images[0] ?? '')
+  }, [open, product?.id])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -98,6 +103,16 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
               placeholder="Optional product description"
             />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="category">Category</Label>
+            <Input
+              id="category"
+              name="category"
+              defaultValue={product?.category ?? ''}
+              placeholder="e.g. Clothing, Electronics, Food"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="price">Price (AUD)</Label>

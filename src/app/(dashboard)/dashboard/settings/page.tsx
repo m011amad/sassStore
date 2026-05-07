@@ -10,6 +10,8 @@ import { ConnectButton } from '@/components/dashboard/connect-button'
 import { ColorInput } from '@/components/dashboard/color-input'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import type { MerchantBranding } from '@/types'
+import { BannerImageManager } from '@/components/dashboard/banner-image-manager'
+import { LogoUpload } from '@/components/dashboard/logo-upload'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -68,7 +70,7 @@ export default async function SettingsPage() {
             <Label htmlFor="subdomain">Subdomain</Label>
             <div className="flex items-center gap-2">
               <Input id="subdomain" value={merchant.subdomain} disabled className="max-w-xs" />
-              <span className="text-sm text-muted-foreground">.your-platform.com</span>
+              <span className="text-sm text-muted-foreground">.digitalmarket.com</span>
             </div>
             <p className="text-xs text-muted-foreground">Subdomain cannot be changed after signup.</p>
           </div>
@@ -87,15 +89,35 @@ export default async function SettingsPage() {
             <ColorInput defaultValue={branding.primaryColor} />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="logoUrl">Logo URL</Label>
-            <Input
-              id="logoUrl"
-              name="logoUrl"
-              defaultValue={branding.logoUrl ?? ''}
-              placeholder="https://example.com/logo.png"
-            />
+          <div className="space-y-1.5">
+            <Label>Logo</Label>
+            <LogoUpload initialUrl={branding.logoUrl} merchantId={merchant.id} />
           </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="tagline">Store tagline</Label>
+            <Input
+              id="tagline"
+              name="tagline"
+              defaultValue={branding.heroTagline ?? ''}
+              placeholder="Fresh groceries delivered daily"
+            />
+            <p className="text-xs text-muted-foreground">Shown next to your store name in the navigation bar.</p>
+          </div>
+
+        </div>
+
+        <div className="rounded-xl border bg-card p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold">Shop Banner Images</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload images for the carousel shown at the top of your shop page. Recommended 16:9, at least 1200×675px.
+            </p>
+          </div>
+          <BannerImageManager
+            initialImages={branding.bannerImages ?? []}
+            merchantId={merchant.id}
+          />
         </div>
 
         <div className="rounded-xl border bg-card p-6 space-y-4">

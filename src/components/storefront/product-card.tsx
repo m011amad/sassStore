@@ -57,6 +57,15 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           )}
 
+          {/* Category badge */}
+          {product.category && (
+            <div className="absolute left-3 top-3">
+              <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                {product.category}
+              </span>
+            </div>
+          )}
+
           {/* bottom gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-3 pt-20">
             <p className="truncate text-sm font-semibold text-white">{product.name}</p>

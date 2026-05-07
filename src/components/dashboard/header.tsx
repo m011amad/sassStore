@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LogOut, ExternalLink } from 'lucide-react'
+import { ThemeToggle } from '@/components/dashboard/theme-toggle'
+import { Separator } from '@/components/ui/separator'
 
 async function signOut() {
   'use server'
@@ -35,28 +37,34 @@ export async function DashboardHeader() {
     : null
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-card px-6">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4 sm:px-6">
       <div />
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+
         {storeUrl && (
           <a
             href={storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
           >
-            <ExternalLink className="size-4" />
-            View Store
+            <ExternalLink className="size-3.5" />
+            Visit Store
           </a>
         )}
-        <span className="text-sm text-muted-foreground">{user?.email}</span>
+
+        <Separator orientation="vertical" className="mx-1 h-5" />
+
+        <span className="hidden text-xs text-muted-foreground sm:block">{user?.email}</span>
+
         <form action={signOut}>
           <button
             type="submit"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <LogOut className="size-4" />
-            Sign out
+            <LogOut className="size-3.5" />
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </form>
       </div>

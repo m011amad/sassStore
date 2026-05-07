@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YourPlatform — Launch your store",
+  title: "Digital Market — Launch your store",
   description: "Multi-tenant ecommerce platform",
 };
 

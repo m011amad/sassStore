@@ -50,23 +50,44 @@ export default async function DashboardPage() {
   const customerCount = customersResult.data?.length ?? 0
   const recentOrders = recentOrdersResult.data ?? []
 
-  // Build daily revenue for last 30 days
   const today = new Date()
-  const dayMap = new Map<string, { revenue: number; orders: number }>()
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(today)
-    d.setDate(d.getDate() - i)
-    dayMap.set(d.toISOString().slice(0, 10), { revenue: 0, orders: 0 })
-  }
-  for (const order of allOrders) {
-    const day = order.created_at.slice(0, 10)
-    if (dayMap.has(day)) {
-      const entry = dayMap.get(day)!
-      entry.revenue += order.total
-      entry.orders += 1
+  const useMonthly = orderCount > 30
+
+  let chartData: { date: string; revenue: number; orders: number }[]
+  if (useMonthly) {
+    const monthMap = new Map<string, { revenue: number; orders: number }>()
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(today)
+      d.setMonth(d.getMonth() - i)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      monthMap.set(key, { revenue: 0, orders: 0 })
     }
+    for (const order of allOrders) {
+      const month = order.created_at.slice(0, 7)
+      if (monthMap.has(month)) {
+        const entry = monthMap.get(month)!
+        entry.revenue += order.total
+        entry.orders += 1
+      }
+    }
+    chartData = Array.from(monthMap.entries()).map(([date, v]) => ({ date, ...v }))
+  } else {
+    const dayMap = new Map<string, { revenue: number; orders: number }>()
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(d.getDate() - i)
+      dayMap.set(d.toISOString().slice(0, 10), { revenue: 0, orders: 0 })
+    }
+    for (const order of allOrders) {
+      const day = order.created_at.slice(0, 10)
+      if (dayMap.has(day)) {
+        const entry = dayMap.get(day)!
+        entry.revenue += order.total
+        entry.orders += 1
+      }
+    }
+    chartData = Array.from(dayMap.entries()).map(([date, v]) => ({ date, ...v }))
   }
-  const chartData = Array.from(dayMap.entries()).map(([date, v]) => ({ date, ...v }))
 
   const stats = [
     { label: 'Total Revenue', value: formatCurrency(totalRevenue), icon: DollarSign },
@@ -99,10 +120,12 @@ export default async function DashboardPage() {
       {/* Revenue chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Revenue — last 30 days</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Revenue — {useMonthly ? 'last 12 months' : 'last 30 days'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <RevenueChart data={chartData} />
+          <RevenueChart data={chartData} granularity={useMonthly ? 'monthly' : 'daily'} />
         </CardContent>
       </Card>
 

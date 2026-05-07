@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
@@ -19,12 +20,21 @@ const SORT_OPTIONS = [
   { value: 'name_asc', label: 'Name: A–Z' },
 ]
 
-export function SearchSort({ total }: { total: number }) {
+interface SearchSortProps {
+  total: number
+  categories?: string[]
+}
+
+export function SearchSort({ total, categories = [] }: SearchSortProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const currentSort = searchParams.get('sort') ?? 'newest'
+  const currentQ = searchParams.get('q') ?? ''
+  const currentCategory = searchParams.get('category') ?? ''
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
@@ -42,39 +52,78 @@ export function SearchSort({ total }: { total: number }) {
     debounceRef.current = setTimeout(() => updateParams({ q: value }), 300)
   }
 
-  const currentSort = searchParams.get('sort') ?? 'newest'
-  const currentQ = searchParams.get('q') ?? ''
-
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-muted-foreground">
-        {isPending ? 'Searching…' : `${total} product${total !== 1 ? 's' : ''}`}
-      </p>
-      <div className="flex gap-2">
-        <div className="relative flex-1 sm:w-64 sm:flex-none">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search products…"
-            defaultValue={currentQ}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9"
-          />
+    <div className="space-y-3">
+      {/* Category pills */}
+      {categories.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => updateParams({ category: '' })}
+            className={cn(
+              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              !currentCategory
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            )}
+          >
+            All
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => updateParams({ category: currentCategory === cat ? '' : cat })}
+              className={cn(
+                'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                currentCategory === cat
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              )}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
-        <Select
-          defaultValue={currentSort}
-          onValueChange={(value) => updateParams({ sort: value })}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      )}
+
+      {/* Search + sort row */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          {isPending ? 'Filtering…' : `${total} product${total !== 1 ? 's' : ''}`}
+        </p>
+        <div className="flex gap-2">
+          <div className="relative flex-1 sm:w-64 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search products…"
+              defaultValue={currentQ}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-9 pr-8"
+            />
+            {currentQ && (
+              <button
+                onClick={() => updateParams({ q: '' })}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+          <Select
+            defaultValue={currentSort}
+            onValueChange={(value) => updateParams({ sort: value })}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   )

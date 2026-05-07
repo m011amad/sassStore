@@ -21,6 +21,7 @@ async function getMerchantId() {
 }
 
 function parseProductForm(formData: FormData) {
+  const category = (formData.get('category') as string)?.trim() || null
   return {
     name: formData.get('name') as string,
     description: (formData.get('description') as string) || null,
@@ -29,7 +30,8 @@ function parseProductForm(formData: FormData) {
     images: (formData.get('imageUrl') as string)
       ? [(formData.get('imageUrl') as string)]
       : [],
-  }
+    category,
+  } as any
 }
 
 export async function createProduct(formData: FormData) {
