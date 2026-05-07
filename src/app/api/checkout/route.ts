@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { checkoutLimiter } from '@/lib/ratelimit'
 import type { CartItem } from '@/store/cart-store'
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'anonymous'
+    const { success } = await checkoutLimiter.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    }
+  }
+
   let tenantId: string
   let items: CartItem[]
 
@@ -34,22 +43,17 @@ export async function POST(request: NextRequest) {
     merchant?.subdomain ??
     'Store'
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
+  const baseUrl = new URL(request.url).origin
 
   const PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT ?? '2')
 
   const orderTotal = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0)
   const applicationFee = Math.round(orderTotal * PLATFORM_FEE_PERCENT / 100)
 
+  // Minimal format to stay under Stripe's 500-char metadata limit.
+  // Webhook looks up name/price from DB using the product IDs.
   const serializedItems = JSON.stringify(
-    items.map((i) => ({
-      productId: i.product.id,
-      name: i.product.name,
-      price: i.product.price,
-      quantity: i.quantity,
-    }))
+    items.map((i) => ({ i: i.product.id, q: i.quantity }))
   )
 
   const useConnect =

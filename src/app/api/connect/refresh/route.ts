@@ -20,9 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/settings', request.url))
   }
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
+  const baseUrl = new URL(request.url).origin
 
   const accountLink = await stripe.accountLinks.create({
     account: merchant.stripe_connect_id,

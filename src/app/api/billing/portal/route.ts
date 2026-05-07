@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const baseUrl = new URL(request.url).origin
   const supabase = await createClient()
   const {
     data: { user },
@@ -26,14 +27,14 @@ export async function POST() {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customer.id,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+      return_url: `${baseUrl}/dashboard/settings`,
     })
     return NextResponse.json({ url: session.url })
   }
 
   const session = await stripe.billingPortal.sessions.create({
     customer: merchant.stripe_id,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+    return_url: `${baseUrl}/dashboard/settings`,
   })
 
   return NextResponse.json({ url: session.url })

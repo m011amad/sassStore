@@ -1,9 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { connectLimiter } from '@/lib/ratelimit'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'anonymous'
+    const { success } = await connectLimiter.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    }
+  }
   const supabase = await createClient()
   const {
     data: { user },
@@ -18,9 +26,7 @@ export async function POST() {
 
   if (!merchant) return NextResponse.json({ error: 'Merchant not found' }, { status: 404 })
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
+  const baseUrl = new URL(request.url).origin
 
   let accountId = merchant.stripe_connect_id
 

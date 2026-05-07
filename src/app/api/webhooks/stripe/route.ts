@@ -26,7 +26,19 @@ export async function POST(request: NextRequest) {
 
       if (!tenantId || !itemsJson) break
 
-      const items: OrderItem[] = JSON.parse(itemsJson)
+      // Metadata stores minimal {i: productId, q: quantity} to stay under 500-char limit.
+      // Look up name/price from DB.
+      const itemRefs: { i: string; q: number }[] = JSON.parse(itemsJson)
+      const { data: products } = await supabaseAdmin
+        .from('products')
+        .select('id, name, price')
+        .in('id', itemRefs.map((r) => r.i))
+      const productMap = new Map(products?.map((p) => [p.id, p]) ?? [])
+      const items: OrderItem[] = itemRefs.map((ref) => {
+        const p = productMap.get(ref.i)
+        return { productId: ref.i, name: p?.name ?? 'Unknown', price: p?.price ?? 0, quantity: ref.q }
+      })
+
       const email = session.customer_details?.email ?? ''
       const name = session.customer_details?.name ?? ''
 
