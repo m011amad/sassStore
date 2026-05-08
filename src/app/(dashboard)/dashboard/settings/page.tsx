@@ -105,6 +105,17 @@ export default async function SettingsPage() {
             <p className="text-xs text-muted-foreground">Shown next to your store name in the navigation bar.</p>
           </div>
 
+          <div className="space-y-1">
+            <Label htmlFor="announcementBanner">Announcement banner</Label>
+            <Input
+              id="announcementBanner"
+              name="announcementBanner"
+              defaultValue={branding.announcementBanner ?? ''}
+              placeholder="Free shipping on orders over $50 🎉"
+            />
+            <p className="text-xs text-muted-foreground">Shown at the top of your storefront. Leave empty to hide.</p>
+          </div>
+
         </div>
 
         <div className="rounded-xl border bg-card p-6 space-y-4">

@@ -17,6 +17,7 @@ export type MerchantBranding = {
   heroTagline?: string
   heroImage?: string
   bannerImages?: string[]
+  announcementBanner?: string
 }
 
 export type OrderItem = {

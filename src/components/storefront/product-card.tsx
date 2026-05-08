@@ -5,138 +5,163 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import type { Product } from '@/types'
 import { useCartStore } from '@/store/cart-store'
-import { Button } from '@/components/ui/button'
-import { Check, ShoppingCart, RotateCcw, ArrowRight } from 'lucide-react'
+import { Check, ShoppingCart, Minus, Plus, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { WishlistButton } from './wishlist-button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
 }
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const addItem = useCartStore((s) => s.addItem)
-  const [flipped, setFlipped] = useState(false)
   const [added, setAdded] = useState(false)
+  const [qty, setQty] = useState(1)
+  const [open, setOpen] = useState(false)
 
-  function handleAdd(e: React.MouseEvent) {
-    e.stopPropagation()
+  const maxQty = product.stock > 0 ? Math.min(product.stock, 10) : 0
+
+  function handleQuickAdd() {
     if (product.stock === 0) return
-    addItem(product)
+    addItem(product, 1)
     setAdded(true)
     toast.success(`${product.name} added to cart`)
     setTimeout(() => setAdded(false), 1800)
   }
 
+  function handleBulkAdd() {
+    if (product.stock === 0) return
+    addItem(product, qty)
+    setAdded(true)
+    toast.success(`${qty > 1 ? `${qty}× ` : ''}${product.name} added to cart`)
+    setOpen(false)
+    setTimeout(() => {
+      setAdded(false)
+      setQty(1)
+    }, 1800)
+  }
+
   return (
-    // perspective container — must have fixed height so back face aligns
-    <div
-      className="group relative cursor-pointer"
-      style={{ perspective: 1000 }}
-      onClick={() => setFlipped((f) => !f)}
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.38, delay: index * 0.045, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <motion.div
-        animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-        style={{ transformStyle: 'preserve-3d' }}
-        className="relative aspect-[3/4]"
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="group overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow duration-300 hover:shadow-md"
       >
-        {/* ── FRONT ── */}
-        <div
-          className="absolute inset-0 overflow-hidden rounded-2xl bg-muted"
-          style={{ backfaceVisibility: 'hidden' }}
-        >
-          {product.images[0] ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              <ShoppingCart className="size-10 opacity-30" />
-            </div>
-          )}
+        {/* ── Linked area: image + name navigate to product detail ── */}
+        <Link href={`products/${product.id}`} className="block">
+          <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+            {product.images[0] ? (
+              <img
+                src={product.images[0]}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <ShoppingCart className="size-8 text-muted-foreground opacity-20" />
+              </div>
+            )}
 
-          {/* Category badge */}
-          {product.category && (
-            <div className="absolute left-3 top-3">
-              <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+            {product.category && (
+              <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-0.5 text-[10px] font-medium tracking-wide shadow-sm backdrop-blur-sm">
                 {product.category}
               </span>
+            )}
+
+            <div className="absolute right-3 top-3">
+              <WishlistButton productId={product.id} />
             </div>
-          )}
 
-          {/* bottom gradient overlay */}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-3 pt-20">
-            <p className="truncate text-sm font-semibold text-white">{product.name}</p>
-            <p className="mt-0.5 text-base font-bold text-white">{formatPrice(product.price)}</p>
-
-            {/* Add to cart — always visible on the front */}
-            <button
-              onClick={handleAdd}
-              disabled={product.stock === 0}
-              className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-white/20 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30 disabled:opacity-50"
-            >
-              {added ? (
-                <><Check className="size-3.5" /> Added to cart</>
-              ) : product.stock === 0 ? (
-                'Out of stock'
-              ) : (
-                <><ShoppingCart className="size-3.5" /> Add to cart</>
-              )}
-            </button>
-          </div>
-
-          {/* flip hint */}
-          <div className="absolute right-3 top-3 rounded-full bg-white/20 p-1.5 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-            <RotateCcw className="size-3.5 text-white" />
-          </div>
-        </div>
-
-        {/* ── BACK ── */}
-        <div
-          className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border bg-card p-5"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-          // prevent card click from propagating on the back side buttons
-        >
-          <div className="flex-1 overflow-hidden">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-            </p>
-            <h3 className="mt-1 text-lg font-bold leading-snug">{product.name}</h3>
-            <p className="mt-1 text-2xl font-bold text-primary">{formatPrice(product.price)}</p>
-
-            {product.description ? (
-              <p className="mt-3 line-clamp-5 text-sm leading-relaxed text-muted-foreground">
-                {product.description}
-              </p>
-            ) : (
-              <p className="mt-3 text-sm italic text-muted-foreground">No description.</p>
+            {product.stock === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px]">
+                <span className="rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                  Out of stock
+                </span>
+              </div>
             )}
           </div>
 
-          <div className="mt-4 space-y-2">
-            <Button
-              className="w-full gap-2"
-              size="sm"
+          <div className="px-3.5 pt-3.5">
+            <p className="truncate text-sm font-medium leading-snug">{product.name}</p>
+          </div>
+        </Link>
+
+        {/* ── Non-linked area: price + add buttons (no Link wrapping) ── */}
+        <div className="flex items-center justify-between gap-2 px-3.5 pb-3.5 pt-2">
+          <span className="text-sm font-bold">{formatPrice(product.price)}</span>
+
+          {/* Split button — left: instant add 1, right: qty popover */}
+          <div className="flex shrink-0 overflow-hidden rounded-lg">
+            <button
+              onClick={handleQuickAdd}
               disabled={product.stock === 0}
-              variant={added ? 'outline' : 'default'}
-              onClick={handleAdd}
+              className="flex items-center gap-1.5 bg-primary px-2.5 py-1.5 text-[11px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40"
             >
               {added ? (
-                <><Check className="size-3.5" /> Added!</>
+                <><Check className="size-3" /> Added</>
               ) : (
-                <><ShoppingCart className="size-3.5" /> Add to cart</>
+                <><ShoppingCart className="size-3" /> Add</>
               )}
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="w-full gap-1" onClick={(e) => e.stopPropagation()}>
-              <Link href={`products/${product.id}`}>
-                View details <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+            </button>
+
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  disabled={product.stock === 0}
+                  className="flex items-center border-l border-primary-foreground/20 bg-primary px-1.5 py-1.5 text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                  aria-label="Choose quantity"
+                >
+                  <ChevronDown className="size-3" />
+                </button>
+              </PopoverTrigger>
+
+              <PopoverContent side="top" align="end" className="w-44 p-3">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Quantity</span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="size-6"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        disabled={qty <= 1}
+                      >
+                        <Minus className="size-3" />
+                      </Button>
+                      <span className="w-6 text-center text-sm font-semibold tabular-nums">
+                        {qty}
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="size-6"
+                        onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                        disabled={qty >= maxQty}
+                      >
+                        <Plus className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button size="sm" className="w-full gap-1.5" onClick={handleBulkAdd}>
+                    <ShoppingCart className="size-3.5" />
+                    Add {qty} to cart
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }

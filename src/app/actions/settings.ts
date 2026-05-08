@@ -44,6 +44,7 @@ export async function updateStoreSettings(formData: FormData) {
   const customDomain = (formData.get('customDomain') as string).trim() || null
 
   const tagline = (formData.get('tagline') as string).trim()
+  const announcementBanner = (formData.get('announcementBanner') as string).trim()
 
   const branding: MerchantBranding = {
     ...existing,
@@ -51,6 +52,7 @@ export async function updateStoreSettings(formData: FormData) {
     ...(primaryColor && { primaryColor }),
     ...(logoUrl && { logoUrl }),
     heroTagline: tagline || undefined,
+    announcementBanner: announcementBanner || undefined,
   }
 
   const { error } = await supabase

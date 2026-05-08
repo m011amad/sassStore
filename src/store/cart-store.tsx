@@ -12,7 +12,7 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[]
-  addItem: (product: Product) => void
+  addItem: (product: Product, qty?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -25,17 +25,17 @@ function createCartStore(tenantId: string) {
     persist(
       (set) => ({
         items: [],
-        addItem: (product) =>
+        addItem: (product, qty = 1) =>
           set((state) => {
             const existing = state.items.find((i) => i.product.id === product.id)
             if (existing) {
               return {
                 items: state.items.map((i) =>
-                  i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+                  i.product.id === product.id ? { ...i, quantity: i.quantity + qty } : i
                 ),
               }
             }
-            return { items: [...state.items, { product, quantity: 1 }] }
+            return { items: [...state.items, { product, quantity: qty }] }
           }),
         removeItem: (productId) =>
           set((state) => ({ items: state.items.filter((i) => i.product.id !== productId) })),

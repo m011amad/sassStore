@@ -22,9 +22,12 @@ const SORT_MAP: Record<SortKey, { column: string; ascending: boolean }> = {
 
 function SectionHeading({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <div className="flex items-center gap-2 mb-5">
-      <Icon className="size-5 text-primary" />
+    <div className="mb-6 flex items-center gap-3">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+        <Icon className="size-4 text-primary" />
+      </div>
       <h2 className="text-xl font-bold tracking-tight">{label}</h2>
+      <div className="flex-1 border-t" />
     </div>
   )
 }
@@ -177,8 +180,8 @@ export default async function StorefrontPage({
               <section>
                 <SectionHeading icon={Sparkles} label="New Arrivals" />
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                  {newArrivals.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  {newArrivals.map((product, i) => (
+                    <ProductCard key={product.id} product={product} index={i} />
                   ))}
                 </div>
               </section>
@@ -189,8 +192,8 @@ export default async function StorefrontPage({
               <section>
                 <SectionHeading icon={TrendingUp} label="Trending" />
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                  {trending.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  {trending.map((product, i) => (
+                    <ProductCard key={product.id} product={product} index={i} />
                   ))}
                 </div>
               </section>
@@ -201,25 +204,23 @@ export default async function StorefrontPage({
               <SectionHeading icon={Star} label={hasFilters ? 'Results' : 'All Products'} />
               {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  {filteredProducts.map((product, i) => (
+                    <ProductCard key={product.id} product={product} index={i} />
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-4 py-16 text-center">
-                  <div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
-                    <ShoppingBag className="size-8 text-muted-foreground" strokeWidth={1.5} />
+                <div className="flex flex-col items-center gap-4 py-20 text-center">
+                  <div className="flex size-16 items-center justify-center rounded-2xl border bg-muted/50">
+                    <ShoppingBag className="size-7 text-muted-foreground" strokeWidth={1.5} />
                   </div>
-                  <div>
+                  <div className="space-y-1">
                     <p className="font-semibold">No products found</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {hasFilters
-                        ? 'Try a different search or filter.'
-                        : 'This store has no products yet.'}
+                    <p className="text-sm text-muted-foreground">
+                      {hasFilters ? 'Try a different search or filter.' : 'This store has no products yet.'}
                     </p>
                   </div>
                   {hasFilters && (
-                    <a href="." className="text-sm text-primary underline-offset-4 hover:underline">
+                    <a href="." className="rounded-lg border px-4 py-1.5 text-sm font-medium transition-colors hover:bg-muted">
                       Clear filters
                     </a>
                   )}

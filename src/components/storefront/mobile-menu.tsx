@@ -1,45 +1,61 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Suspense } from 'react'
+import { NavSearch } from './nav-search'
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false)
 
-  if (!open) {
-    return (
-      <button
-        className="rounded-md p-1.5 transition-colors hover:bg-muted sm:hidden"
-        aria-label="Menu"
-        onClick={() => setOpen(true)}
-      >
-        <Menu className="size-5" />
-      </button>
-    )
-  }
-
   return (
     <>
       <button
-        className="rounded-md p-1.5 transition-colors hover:bg-muted sm:hidden"
-        aria-label="Close menu"
-        onClick={() => setOpen(false)}
+        className="flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-muted sm:hidden"
+        aria-label={open ? 'Close search' : 'Search products'}
+        onClick={() => setOpen((o) => !o)}
       >
-        <X className="size-5" />
+        <AnimatePresence mode="wait" initial={false}>
+          {open ? (
+            <motion.span
+              key="x"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <X className="size-4" />
+            </motion.span>
+          ) : (
+            <motion.span
+              key="search"
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Search className="size-4" />
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
 
       <AnimatePresence>
-        <motion.div
-          key="mobile-menu"
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18 }}
-          className="absolute inset-x-0 top-16 z-50 border-b bg-card px-4 py-4 shadow-lg sm:hidden"
-        >
-          <p className="px-3 text-xs text-muted-foreground">Use the search bar to find products.</p>
-        </motion.div>
+        {open && (
+          <motion.div
+            key="mobile-search-panel"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute inset-x-0 top-16 z-50 border-b bg-background/95 px-4 py-3 shadow-sm backdrop-blur-md sm:hidden"
+          >
+            <Suspense>
+              <NavSearch />
+            </Suspense>
+          </motion.div>
+        )}
       </AnimatePresence>
     </>
   )

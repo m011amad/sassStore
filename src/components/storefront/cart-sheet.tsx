@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useCartStore } from '@/store/cart-store'
 import {
   Sheet,
@@ -50,9 +51,15 @@ export function CartSheet({ tenantId }: { tenantId: string }) {
         >
           <ShoppingCart className="size-5" />
           {count > 0 && (
-            <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold leading-none text-primary-foreground">
+            <motion.span
+              key={count}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold leading-none text-primary-foreground"
+            >
               {count > 9 ? '9+' : count}
-            </span>
+            </motion.span>
           )}
         </button>
       </SheetTrigger>

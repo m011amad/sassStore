@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import type { MerchantBranding } from '@/types'
 import { StorefrontNav } from '@/components/storefront/nav'
+import { AnnouncementBanner } from '@/components/storefront/announcement-banner'
 import { CartProvider } from '@/store/cart-store'
 
 export default async function StorefrontLayout({
@@ -40,6 +41,9 @@ export default async function StorefrontLayout({
   return (
     <CartProvider tenantId={tenantId}>
       <div data-tenant-id={tenantId} style={cssVars} className="flex min-h-screen flex-col">
+        {branding.announcementBanner && (
+          <AnnouncementBanner message={branding.announcementBanner} />
+        )}
         <StorefrontNav
           storeName={storeName}
           logoUrl={branding.logoUrl}
