@@ -1,5 +1,20 @@
 import Link from 'next/link'
-import { ShoppingBag, Zap, CreditCard, BarChart3, Globe, Lock, Check } from 'lucide-react'
+import { ShoppingBag, Zap, CreditCard, BarChart3, Globe, Lock, Check, ArrowUpRight } from 'lucide-react'
+
+const demos = [
+  {
+    name: 'Grocery Store',
+    description: 'Fresh produce, pantry staples, and daily essentials.',
+    tenant: 'grocery',
+    emoji: '🛒',
+  },
+  {
+    name: 'Test Store',
+    description: 'General merchandise — browse the full storefront experience.',
+    tenant: 'test-store',
+    emoji: '🏪',
+  },
+]
 
 const features = [
   {
@@ -107,6 +122,32 @@ export default function PlatformHomePage() {
             >
               Sign in to dashboard
             </Link>
+          </div>
+        </section>
+
+        {/* Demo stores */}
+        <section className="border-t py-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-bold tracking-tight">See it in action</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Browse live demo stores built on Digital Market.</p>
+            </div>
+            <div className="mx-auto grid max-w-2xl gap-4 sm:grid-cols-2">
+              {demos.map((demo) => (
+                <a
+                  key={demo.tenant}
+                  href={`/?_tenant=${demo.tenant}`}
+                  className="group flex items-start gap-4 rounded-2xl border bg-card p-6 transition-shadow hover:shadow-md"
+                >
+                  <span className="text-3xl">{demo.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold">{demo.name}</p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{demo.description}</p>
+                  </div>
+                  <ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground mt-0.5" />
+                </a>
+              ))}
+            </div>
           </div>
         </section>
 

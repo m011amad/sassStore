@@ -1,9 +1,7 @@
 import type { Database } from './supabase'
 
 export type Merchant = Database['public']['Tables']['merchants']['Row']
-export type Product = Database['public']['Tables']['products']['Row'] & {
-  category?: string | null
-}
+export type Product = Database['public']['Tables']['products']['Row']
 export type Order = Database['public']['Tables']['orders']['Row']
 export type Customer = Database['public']['Tables']['customers']['Row']
 
